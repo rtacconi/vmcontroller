@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "vmcontroller/pkg/api";
+
+// Enum for VM command types.
+enum CommandType {
+    UNKNOWN = 0;
+    CREATE = 1;
+    DELETE = 2;
+    RESTART = 3;
+    STOP = 4;
+    START = 5;
+}
+
+// Request message for VM commands.
+message VMCommandRequest {
+    CommandType command = 1;
+    string vm_id = 2;                    // Unique VM identifier.
+    map<string, string> parameters = 3;  // Additional parameters (e.g. image, network).
+}
+
+// Response message for commands.
+message VMCommandResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// Service that the controller exposes.
+service VMController {
+    rpc ExecuteCommand(VMCommandRequest) returns (VMCommandResponse);
+}
+
+// Message for node resource reporting.
+message NodeResources {
+    string node_id = 1;
+    int32 cpu_cores = 2;
+    int32 ram_mb = 3;
+    int32 storage_gb = 4;
+}
+
+// Service for agents to report resources and execute commands.
+service AgentService {
+    rpc ReportResources(NodeResources) returns (VMCommandResponse);
+    rpc ExecuteAgentCommand(VMCommandRequest) returns (VMCommandResponse);
+}
+
